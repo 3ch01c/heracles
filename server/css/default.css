@@ -1,0 +1,32 @@
+body {
+	font: 0.7em sans-serif;
+}
+
+div {
+	float: left;
+}
+
+.section {
+	width: 100%;
+}
+
+.label {
+	margin-left: 5px;
+	margin-bottom: 5px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.feedback {
+	float: none;
+}
+
+.fail {
+	color: red;
+	font-weight: bold;
+}
+
+.success {
+	color: green;
+	font-weight: bold;
+}

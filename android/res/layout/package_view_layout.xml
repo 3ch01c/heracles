@@ -1,0 +1,152 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PackageViewActivity" >
+
+    <TextView
+        android:id="@+id/name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="Name:" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/version_label"
+        android:layout_alignLeft="@+id/checksum"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/version_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/name_label"
+        android:text="Version:" />
+
+    <TextView
+        android:id="@+id/version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/version_label"
+        android:layout_alignBottom="@+id/version_label"
+        android:layout_alignLeft="@+id/name"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/created_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/version_label"
+        android:text="Installed:" />
+
+    <TextView
+        android:id="@+id/created"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/location"
+        android:layout_alignLeft="@+id/version"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/created"
+        android:layout_below="@+id/created_label"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/sdk_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/location"
+        android:text="SDK:" />
+
+    <TextView
+        android:id="@+id/sdk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/location"
+        android:layout_below="@+id/location"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/checksum_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/sdk_label"
+        android:text="Checksum:" />
+
+    <TextView
+        android:id="@+id/checksum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/checksum_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/checksum_label"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/checksum_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/checksum"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/checksum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/checksum_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/checksum_label"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/checksum_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/checksum"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/click_perm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/checksum_label"
+        android:text="The following permissions are requested by this package. Click a permission to view details."
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/num_perms"
+        android:layout_below="@+id/click_perm"
+        android:layout_marginTop="10dp" >
+
+        <ListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent" >
+        </ListView>
+    </LinearLayout>
+
+    <TextView
+        android:id="@id/num_perms"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+</RelativeLayout>

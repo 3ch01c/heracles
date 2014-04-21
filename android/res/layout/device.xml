@@ -1,0 +1,100 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/uuidLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/uuidLabel"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/modelLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/uuidLabel"
+        android:text="@string/modelLabel"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/carrierLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/modelLabel"
+        android:text="@string/carrierLabel"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/romLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/carrierLabel"
+        android:text="@string/romLabel"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/osVersionLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/romLabel"
+        android:text="@string/osVersionLabel"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/uuid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/uuidLabel"
+        android:layout_alignLeft="@+id/carrier"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/model"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/osVersion"
+        android:layout_below="@+id/uuid"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/carrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/osVersion"
+        android:layout_below="@+id/model"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/rom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/osVersion"
+        android:layout_below="@+id/carrier"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:singleLine="true"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/osVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/osVersionLabel"
+        android:layout_alignBottom="@+id/osVersionLabel"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/osVersionLabel"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textIsSelectable="true" />
+
+</RelativeLayout>

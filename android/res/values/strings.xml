@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Heracles</string>
+    <string name="settings">Settings</string>
+    <string name="package_list_activity">Packages</string>
+    <string name="submit_packages">Submit Packages</string>
+    <string name="view_device">View Device Info</string>
+    <string name="view_permissions">View Permissions</string>
+    <string name="view_packages">View Packages</string>
+    <string name="title_activity_package_view">PackageViewActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="submit_package_info">Submit package info</string>
+    <string name="click_package_details">The following packages are installed on this device. Click a package to view details.</string>
+    <string name="submit_package">Submit package</string>
+    <string name="submit_full_report">Submit full report</string>
+    <string name="submit_device">Submit device</string>
+    <string name="device_info">Device Info</string>
+    <string name="permissions">Permissions</string>
+    <string name="action_settings">Settings</string>
+    <string name="uuidLabel">UUID: </string>
+    <string name="modelLabel">Model: </string>
+    <string name="carrierLabel">Carrier: </string>
+    <string name="romLabel">ROM:</string>
+    <string name="osVersionLabel">OS Version:</string>
+</resources>

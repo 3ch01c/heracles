@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_view_permissions"
+        android:showAsAction="ifRoom"
+        android:title="@string/view_permissions">
+    </item>
+    <item
+        android:id="@+id/action_view_device"
+        android:showAsAction="ifRoom"
+        android:title="@string/view_device">
+    </item>
+    <item
+        android:id="@+id/action_submit_full_report"
+        android:showAsAction="ifRoom"
+        android:title="@string/submit_full_report">
+    </item>
+</menu>

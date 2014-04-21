@@ -1,0 +1,1 @@
+SELECT `label`,`versionLabel`,COUNT(`permission`) FROM `packages`,`requests` WHERE `checksum` = `package` GROUP BY `checksum`;

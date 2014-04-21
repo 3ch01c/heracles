@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.wernicke.heracles"
+    android:versionCode="7"
+    android:versionName="2.01" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="17" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- <uses-permission android:name="android.permission.SET_DEBUG_APP" /> -->
+    
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.wernicke.android.heracles.PackageListActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleTask" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.wernicke.android.heracles.PackageViewActivity"
+            android:configChanges="orientation|screenSize" >
+        </activity>
+        <activity
+            android:name="com.wernicke.android.heracles.PermissionListActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/permissions"
+            android:launchMode="singleTask" >
+        </activity>
+        <activity
+            android:name="com.wernicke.android.heracles.PermissionViewActivity"
+            android:configChanges="orientation|screenSize" >
+        </activity>
+        <activity
+            android:name="com.wernicke.android.heracles.DeviceInfoActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/device_info"
+            android:launchMode="singleTask" >
+        </activity>
+    </application>
+
+</manifest>

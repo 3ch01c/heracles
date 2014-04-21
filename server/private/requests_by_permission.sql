@@ -1,0 +1,1 @@
+SELECT `permissions`.`name`,COUNT(`package`) FROM `permissions`,`requests` WHERE `permission` = `name` GROUP BY `name`;
