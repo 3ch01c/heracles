@@ -56,7 +56,6 @@ public class PermissionListAdapter extends ArrayAdapter<PermissionInfo> {
 			ViewHolder viewHolder = new ViewHolder();
 			viewHolder.labelView = (TextView) rowView.findViewById(R.id.permission_label);
 			viewHolder.nameView = (TextView) rowView.findViewById(R.id.permission_name);
-			viewHolder.checkView = (CheckBox) rowView.findViewById(R.id.permission_check);
 
 			// set row view tag to holder
 			rowView.setTag(viewHolder);
@@ -80,8 +79,6 @@ public class PermissionListAdapter extends ArrayAdapter<PermissionInfo> {
 			holder.nameView.setTextColor(Color.WHITE);
 		}
 
-		// TODO: make check box reflect whether or not the user actually wants to grant or deny this permission
-		holder.checkView.setChecked(true);
 		return rowView;
 	}
 

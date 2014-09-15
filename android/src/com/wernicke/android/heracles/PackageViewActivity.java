@@ -2,11 +2,13 @@ package com.wernicke.android.heracles;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
@@ -16,15 +18,22 @@ import com.stericson.RootTools.RootTools;
 import com.stericson.RootTools.exceptions.RootDeniedException;
 import com.stericson.RootTools.execution.Command;
 import com.wernicke.android.heracles.PackageListActivity.SubmitFullReport;
+import com.wernicke.android.utils.RootTools.ResultCommand;
+import com.wernicke.heracles.BuildConfig;
 import com.wernicke.heracles.R;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Message;
 import android.provider.Settings.Secure;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -32,6 +41,9 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PermissionInfo;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,15 +51,19 @@ import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Toast;
 
 @SuppressWarnings("unused")
 public class PackageViewActivity extends Activity {
 
+	private static final int TIMEOUT = 100000;
 	Context context;
 	PackageManager pm;
 	ProgressDialog pDialog;
+	AlertDialog aDialog;
 	PermissionListAdapter adapter; // permission list view adapter
 	PackageInfo pkg; // the package we're viewing
 
@@ -73,6 +89,8 @@ public class PackageViewActivity extends Activity {
 
 	ArrayList<PermissionInfo> requestedPermissions; // permissions requested by
 													// this package
+	
+	private ShareActionProvider mShareActionProvider;
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
@@ -141,6 +159,14 @@ public class PackageViewActivity extends Activity {
 		// display the install location
 		TextView locationView = (TextView) findViewById(R.id.location);
 		locationView.setText(location);
+		locationView.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				new ShareApk().execute();
+			}
+			
+		});
 
 		// get the min/target sdk
 		targetSdk = pkg.applicationInfo.targetSdkVersion;
@@ -156,26 +182,24 @@ public class PackageViewActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.package_view, menu);
+		
 		return true;
 	}
-
+	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.action_view_permissions:
-			// TODO: show list of all permissions
-			return true;
-		case R.id.action_view_device:
-			// TODO: show device info activity
-			return true;
 		case R.id.action_submit_package:
 			// upload package report
 			new SubmitPackageReport().execute();
+			return true;
+		case R.id.action_share_apk:
+			new ShareApk().execute();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
-
+	
 	/**
 	 * Gets package details that take a while to get.
 	 * 
@@ -206,7 +230,11 @@ public class PackageViewActivity extends Activity {
 					checksum = Utils.getChecksum(pkg);
 
 				// get package size
-				size = Utils.getSize(pkg.applicationInfo.sourceDir);
+				try {
+					size = Utils.getSize(pkg.applicationInfo.sourceDir);
+				} catch (Exception e) {
+					e.getMessage();
+				}
 			}
 
 			// get permissions
@@ -288,7 +316,7 @@ public class PackageViewActivity extends Activity {
 		}
 	}
 
-	public class SubmitPackageReport extends AsyncTask<String, String, String> {
+	class SubmitPackageReport extends AsyncTask<String, String, String> {
 
 		/**
 		 * Before starting background thread, show progress dialog.
@@ -323,7 +351,7 @@ public class PackageViewActivity extends Activity {
 		}
 	}
 	
-	public class GetMarketData extends AsyncTask<String, String, String> {
+	class GetMarketData extends AsyncTask<String, String, String> {
 
 		/**
 		 * Before starting background thread, show progress dialog.
@@ -359,5 +387,54 @@ public class PackageViewActivity extends Activity {
 			pDialog.dismiss();
 		}
 	}
+	
+	class ShareApk extends AsyncTask<String, String, String> {
 
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			json = new JSONObject();
+			pDialog = new ProgressDialog(context);
+			pDialog.setMessage(String.format("Copying package to " + Environment.getExternalStorageDirectory().getAbsolutePath() + "backup/apk..."));
+			pDialog.setIndeterminate(true);
+			pDialog.setCancelable(true);
+			pDialog.show();
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			if (isExternalStorageWritable()) {
+				File dir = new File(Environment.getExternalStorageDirectory(), "backup/apk");
+				dir.mkdirs();
+				File file = new File(dir, FilenameUtils.getBaseName(location) + "-" + checksum + "." + FilenameUtils.getExtension(location));
+				String source = location,
+						destination = file.getAbsolutePath();
+				Log.d("copy file", "Copying file from " + location + " to " + file.getAbsolutePath());
+				if (RootTools.copyFile(source, destination, true, true)) {
+					pDialog.dismiss();
+					Intent intent = new Intent(Intent.ACTION_SEND);
+					Uri uri = Uri.parse(destination);
+					String type = URLConnection.guessContentTypeFromName(uri.toString());
+					intent.setType(type);
+					intent.putExtra(Intent.EXTRA_STREAM, uri);
+					Log.d("open apk", "Opening " + uri + " (" + type + ")");
+					startActivity(Intent.createChooser(intent, "Send APK via..."));
+				}
+			} else {
+				pDialog.setMessage("Unable to access external storage.");
+				pDialog.setProgress(0);
+				pDialog.setIndeterminate(false);
+			}
+			return null;
+		}
+	}
+	
+	public boolean isExternalStorageWritable() {
+	    String state = Environment.getExternalStorageState();
+	    if (Environment.MEDIA_MOUNTED.equals(state)) {
+	        return true;
+	    }
+	    return false;
+	}
 }

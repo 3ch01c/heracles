@@ -3,7 +3,10 @@
     <item
         android:id="@+id/action_submit_package"
         android:showAsAction="ifRoom"
-        android:title="@string/submit_package">
-    </item>
+        android:title="@string/submit_package" />
+    <item
+        android:id="@+id/action_share_apk"
+		android:title="@string/share_apk"
+		android:showAsAction="ifRoom" />
 
 </menu>

@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipOutputStream;
 
+import com.wernicke.android.utils.Base64;
+
+import org.apache.commons.codec.binary.Hex;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
@@ -118,10 +121,10 @@ public class Utils {
 
 			// build command
 			ResultCommand command = new ResultCommand(0, TIMEOUT, "md5sum " + path);
-			runCommand(command);
 			String checksum = command.getResult().split(" ")[0];
-			if (isHash(checksum))
-				return checksum;
+			if (isHash(checksum)) {
+				return Base64.encode(Hex.decodeHex(checksum.toCharArray())).substring(0,8);
+			}
 		} catch (Exception e) {
 		}
 		return null;
@@ -132,7 +135,8 @@ public class Utils {
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			byte[] digest;
 			digest = md.digest((pkg.packageName + pkg.versionCode).getBytes("UTF-8"));
-			return toHex(digest);
+			return Base64.encode(digest).substring(0,8);
+			//return toHex(digest);
 		} catch (NoSuchAlgorithmException e) {
 			Log.d("digest", "could not find MD5 algorithm");
 		} catch (UnsupportedEncodingException e) {
@@ -147,7 +151,7 @@ public class Utils {
 	 * @param pkg
 	 * @return
 	 */
-	public static int getSize(String path) {
+	public static int getSize(String path) throws Exception {
 		int size = 0;
 
 		// if the device has su & busybox, get size, else just return 0
@@ -155,13 +159,19 @@ public class Utils {
 			RootTools.debugMode = true; // turn on root tools debug mode
 
 			// build command
-			ResultCommand command = new ResultCommand(0, 10000, "stat -t " + path);
-			runCommand(command);
-			try {
-				size = Integer.parseInt(command.getResult().split(" ")[1]);
-			} catch (Exception e) {
-
+			ResultCommand cmd = new ResultCommand(0, 10000, "stat -t " + path);
+			while (!RootTools.getShell(true).add(cmd).isFinished()) {
+				synchronized(cmd) {
+					try {
+						if (!cmd.isFinished()) {
+							cmd.wait(2000);
+						}
+					} catch (InterruptedException e) {
+						e.getMessage();
+					}
+				}
 			}
+			size = Integer.parseInt(cmd.getResult().split(" ")[1]);
 		}
 		return size;
 	}
@@ -175,27 +185,6 @@ public class Utils {
 			return StringUtils.capitalize(model);
 		} else {
 			return StringUtils.capitalize(make) + " " + model;
-		}
-	}
-
-	/**
-	 * Runs a command.
-	 * 
-	 * @param command
-	 * @return
-	 */
-	public static void runCommand(Command command) {
-		// RootTools.debugMode = true; // turn on root tools debug mode
-		try {
-			RootTools.getShell(true).add(command).waitForFinish();
-		} catch (InterruptedException e) {
-			e.getMessage();
-		} catch (IOException e) {
-			e.getMessage();
-		} catch (TimeoutException e) {
-			e.getMessage();
-		} catch (RootDeniedException e) {
-			e.getMessage();
 		}
 	}
 
@@ -219,7 +208,12 @@ public class Utils {
 			checksum = getChecksum(pkg);
 		String versionLabel = pkg.versionName;
 		int versionCode = pkg.versionCode;
-		int size = Utils.getSize(pkg.applicationInfo.sourceDir);
+		int size = 0;
+		try {
+			size = Utils.getSize(pkg.applicationInfo.sourceDir);
+		} catch (Exception e) {
+			e.getMessage();
+		}
 		int targetSdk = pkg.applicationInfo.targetSdkVersion;
 		// long lastUpdate = pkg.lastUpdateTime;
 		// String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date(lastUpdate));
@@ -368,10 +362,7 @@ public class Utils {
 			String rom = Build.DISPLAY;
 			String version = Build.VERSION.RELEASE;
 			
-			List<NameValuePair> params = new ArrayList<NameValuePair>();
-			//params.add(new BasicNameValuePair("device",buildDeviceParams(uuid, make, model, carrier, rom, version, null)));
-			
-
+			List<NameValuePair> params = buildDeviceParams(uuid, make, model, carrier, rom, version, null);
 			for (PackageInfo pkg : packages) {
 
 			}
@@ -410,7 +401,13 @@ public class Utils {
 		try {
 			// add package attributes
 			json.put("checksum", Utils.getChecksum(pkg));
-			json.put("size", Utils.getSize(pkg.applicationInfo.sourceDir));
+			int size = 0;
+			try {
+				size = Utils.getSize(pkg.applicationInfo.sourceDir);
+			} catch (Exception e) {
+				e.getMessage();
+			}
+			json.put("size", size);
 			json.put("name", pkg.packageName);
 			json.put("label", pkg.applicationInfo.loadLabel(pm));
 			json.put("versionCode", pkg.versionCode);
@@ -479,6 +476,6 @@ public class Utils {
 		json = jsonParser.makeHttpRequest(URL + "/markets/stats.php", METHOD, params);
 		
 		return json;
-	}
-	
+	}	
 }
+

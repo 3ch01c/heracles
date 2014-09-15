@@ -23,4 +23,7 @@
     <string name="carrierLabel">Carrier: </string>
     <string name="romLabel">ROM:</string>
     <string name="osVersionLabel">OS Version:</string>
+    <string name="num_packages">Number of packages</string>
+    <string name="permission_list_help">The following permissions are requested by this package. Click a permission to view details.</string>
+    <string name="share_apk">Share APK</string>
 </resources>

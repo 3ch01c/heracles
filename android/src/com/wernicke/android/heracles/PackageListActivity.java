@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -63,7 +64,7 @@ public class PackageListActivity extends Activity {
 		// get device info
 		uuid = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
 		make = Build.MANUFACTURER;
-		model = Build.DISPLAY;
+		model = Build.MODEL;
 		carrier = Build.BRAND;
 		rom = Build.DISPLAY;
 		version = Build.VERSION.RELEASE;
@@ -184,9 +185,6 @@ public class PackageListActivity extends Activity {
 
 	/**
 	 * Send all the package infos.
-	 * 
-	 * @author james
-	 * 
 	 */
 	class SubmitFullReport extends AsyncTask<String, String, String> {
 
@@ -237,6 +235,7 @@ public class PackageListActivity extends Activity {
 			// Utils.submitDevice(uuid, make, model, carrier, rom, version, null);
 			// submit all packages
 			for (PackageInfo pkg : packages) {
+				/*
 				JSONObject pakg = new JSONObject();
 				try {
 					pakg.put("checksum", Utils.getChecksum(pkg));
@@ -244,6 +243,39 @@ public class PackageListActivity extends Activity {
 					Log.e("submit package", "could not build JSON");
 				}
 				Utils.submitPackage(pkg, uuid);
+				*/
+				JSONObject packagesJson = new JSONObject();
+				try {
+					JSONObject packageJson = new JSONObject();
+					packageJson.put("name", pkg.packageName);
+					try {
+						packageJson.put("label",pm.getApplicationLabel(pkg.applicationInfo).toString());
+					} catch (Exception e) {
+						packageJson.put("label",pkg.packageName);
+					}
+					String checksum = Utils.getChecksum(pkg.applicationInfo.sourceDir);
+					if (checksum == null) checksum = Utils.getChecksum(pkg);
+					packageJson.put("versionName",pkg.versionName);
+					packageJson.put("version",pkg.versionCode);
+					int size = 0;
+					try {
+						size = Utils.getSize(pkg.applicationInfo.sourceDir);
+					} catch (Exception e) {
+						e.getMessage();
+					}
+					packageJson.put("size",size);
+					packageJson.put("targetSdk",pkg.applicationInfo.targetSdkVersion);
+					packageJson.put("lastUpdate",pkg.lastUpdateTime);
+					for (PermissionInfo permission : pkg.permissions) {
+						packageJson.accumulate("permissions", permission.name);
+					}
+					packagesJson.put(checksum, packageJson);
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				Log.d("submit package", packagesJson.toString());
+				
 				i++;
 				progress = i * 100 / packages.size();
 				pDialog.setProgress(progress);

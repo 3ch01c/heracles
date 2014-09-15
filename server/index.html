@@ -1,1 +1,374 @@
-<html><body>It works!</body></html>
+<html>
+<head>
+<script src="js/jquery-1.9.1.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/default.css" media="screen" />
+<script>
+var debug = 0; // debug = 1 means display sql queries and other debug info
+var params = [ "checksum", "name", "label", "versionCode", "versionLabel", "minSdk", "targetSdk", "size", //package fields
+               "market", "package", "category", "rating", "votes", "downloads", "price", "author", "datePublished", "url", // market fields (also reuses checksum, name, versionLabel from package fields)
+               "protectionLevel", "group", // permission fields (also reuses name & label from package fields)
+               "package", "permission", // request fields
+               "uuid", "make", "model", "carrier", "rom", "version", "user", // device fields
+			   // user fields just reuse package fields
+			   "active", // for device and user profiles
+             ];
+
+	function toggleDebug() {
+		if (debug == 1) {
+			debug = 0;
+			$("#debug").text("Turn debug on");
+		} else {
+			debug = 1;
+			$("#debug").text("Turn debug off");
+		}
+	}
+
+	// test connectivity
+	function test() {
+		$.post("test.php", {}, function(status, data) {
+			$("#result").html(data);
+		})
+	}
+
+	// prints response in feedback div
+	function printResult(fieldset, data) {
+		$("#" + fieldset + " #result").html(data);
+		// populate input fields with return data. make sure debug is off or this won't work!
+		var json = $.parseJSON(data);
+		if (json[fieldset].length > 0) {
+			for (var i = 0; i < params.length; i++) {
+				if (json[fieldset][0][params[i]] != null)
+					$("#" + fieldset + " #" + params[i]).val(json[fieldset][0][params[i]]);
+			}
+		}
+	}
+
+	// post something to some url
+	function post(queryType, table) {
+		// build url e.g., packages/create.php
+		var url = table + "/" + queryType + ".php";
+		$("#" + table + " #result").text(queryType + " " + table + "... please wait");
+
+		// build json object
+		var json = {};
+		json["debug"] = debug; // debug mode gets sql query echo
+
+		// add params to json object if set. only look at vals in the appropriate fieldset e.g., #packages #name
+		for ( var i = 0; i < params.length; i++) {
+			if ($("#" + table + " #" + params[i]).val()) {
+				json[params[i]] = $("#" + table + " #" + params[i]).val();
+			}
+		}
+		// execute post
+		$.post(url, json, function(data, status) {
+			printResult(table, data);
+		})
+	}
+</script>
+</head>
+<body>
+	<div class="section">
+		<button id="debug" onclick="toggleDebug()">Turn debug on</button><button id="test" onclick="test()">Test connectivity</button>
+		<span id="result"></span>
+	</div>
+	<fieldset id="packages">
+		<legend>Packages</legend>
+		<div class="section">
+			<div>
+				<input id="checksum" value="63c9ee238b83c11a254b975eff5e84df"><br>
+				<div class="label">Checksum</div>
+			</div>
+			<div>
+				<input id="name" value="com.facebook.katana"><br>
+				<div class="label">Name</div>
+			</div>
+			<div>
+				<input id="label" value="Facebook"><br>
+				<div class="label">Label</div>
+			</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="versionCode" value="149649"><br>
+				<div class="label">Version code</div>
+			</div>
+			<div>
+				<input id="versionLabel" value="2.3"><br>
+				<div class="label">Version label</div>
+			</div>
+
+		</div>
+		<div class="section">
+			<div>
+				<input id="minSdk" disabled="disabled"><br>
+				<div class="label">Min SDK</div>
+			</div>
+			<div>
+				<input id="targetSdk" value="10"><br>
+				<div class="label">Target SDK</div>
+			</div>
+		</div>
+		<div class="section">
+			<input id="size" value=15518504><br>
+			<div class="label">Size</div>
+		</div>
+		<button onclick="post('create','packages')">Create</button>
+		<button onclick="post('request','packages')">Request</button>
+		<button onclick="post('update','packages')">Update</button>
+		<button onclick="post('delete','packages')">Delete</button>
+
+		<div id="result" class="feedback"></div>
+	</fieldset>
+	<fieldset id="markets">
+		<legend>Markets</legend>
+		<div class="section">
+			<div>
+				<select id="market">
+					<option value=""></option>
+					<option value="Google Play">Google Play</option>
+					<option value="AppBrain">AppBrain</option>
+					<option value="Amazon Appstore">Amazon Appstore</option>
+					<option value="Other">Other</option>
+				</select><br>
+				<div class="label">Market</div>
+			</div>
+			<div>
+				<input id="url"></input><br>
+				<div class="label">URL</div>
+			</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="package" value="63c9ee238b83c11a254b975eff5e84df"><br>
+				<div class="label">Package checksum</div>
+			</div>
+		</div>
+		<div class="section">
+			<input id="category"><br>
+			<div class="label">Category</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="rating"><br>
+				<div class="label">Rating</div>
+			</div>
+			<div>
+				<input id="ratingMin" disabled="disabled"><br>
+				<div class="label">Min</div>
+			</div>
+			<div>
+				<input id="ratingMax" disabled="disabled"><br>
+				<div class="label">Max</div>
+			</div>
+		</div>
+		<div class="section">
+			<input id="votes"><br>
+			<div class="label">Votes</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="downloads"><br>
+				<div class="label">Downloads</div>
+			</div>
+			<div>
+				<input id="downloadsMin" disabled="disabled"><br>
+				<div class="label">Min</div>
+			</div>
+			<div>
+				<input id="downloadsMax" disabled="disabled"><br>
+				<div class="label">Max</div>
+			</div>
+		</div>
+		<div class="section">
+			<input id="price"><br>
+			<div class="label">Price</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="author"><br>
+				<div class="label">Author</div>
+			</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="datePublished"><br>
+				<div class="label">Date published</div>
+			</div>
+			<div>
+				<input id="datePublishedMin" disabled="disabled"><br>
+				<div class="label">Min</div>
+			</div>
+			<div>
+				<input id="datePublishedMax" disabled="disabled"><br>
+				<div class="label">Max</div>
+			</div>
+		</div>
+		<button onclick="post('create','markets')">Create</button>
+		<button onclick="post('request','markets')">Request</button>
+		<button onclick="post('update','markets')">Update</button>
+		<button onclick="post('delete','markets')">Delete</button>
+
+		<div id="result" class="feedback"></div>
+	</fieldset>
+	<fieldset id="permissions">
+		<legend>Permissions</legend>
+		<div class="section">
+			<div>
+				<input id="name" value="android.permission.INTERNET"><br>
+				<div class="label">Name</div>
+			</div>
+			<div>
+				<input id="label" value="full network access"><br>
+				<div class="label">Label</div>
+			</div>
+			<div>
+				<input id="protectionLevel" value=1><br>
+				<div class="label">Protection level</div>
+			</div>
+			<div>
+				<input id="group" value="android.permission-group.NETWORK"><br>
+				<div class="label">Group</div>
+			</div>
+		</div>
+		<button onclick="post('create','permissions')">Create</button>
+		<button onclick="post('request','permissions')">Request</button>
+		<button onclick="post('update','permissions')">Update</button>
+		<button onclick="post('delete','permissions')">Delete</button>
+
+		<div id="result" class="feedback"></div>
+	</fieldset>
+	<fieldset id="requests">
+		<legend>Requests</legend>
+		<div class="section">
+			<div>
+				<input id="package" value="63c9ee238b83c11a254b975eff5e84df"><br>
+				<div class="label">Package</div>
+			</div>
+			<div>
+				<input id="permission" value="android.permission.INTERNET"><br>
+				<div class="label">Permission</div>
+			</div>
+		</div>
+		<button onclick="post('create','requests')">Create</button>
+		<button onclick="post('request','requests')">Request</button>
+		<button onclick="post('update','requests')">Update</button>
+		<button onclick="post('delete','requests')">Delete</button>
+
+		<div id="result" class="feedback"></div>
+	</fieldset>
+	<fieldset id="users">
+		<legend>Users</legend>
+		<div class="section">
+			<div>
+				<input id="name" value="james"><br>
+				<div class="label">Username</div>
+			</div>
+		</div>
+		<button onclick="post('create','users')">Create</button>
+		<button onclick="post('request','users')">Request</button>
+		<button onclick="post('update','users')">Update</button>
+		<button onclick="post('delete','users')">Delete</button>
+
+		<div id="result" class="feedback"></div>
+	</fieldset>
+	<fieldset id="devices">
+		<legend>Devices</legend>
+		<div class="section">
+			<div>
+				<input id="uuid" value="dbdf731a0383eb4d"><br>
+				<div class="label">UUID</div>
+			</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="user" value="james"><br>
+				<div class="label">Owner</div>
+			</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="make" value="Amazon"><br>
+				<div class="label">Make</div>
+			</div>
+			<div>
+				<input id="model" value="Kindle Fire"><br>
+				<div class="label">Model</div>
+			</div>
+			<div>
+				<input id="carrier" value="Android"><br>
+				<div class="label">Carrier</div>
+			</div>
+		</div>
+		<div class="section">
+			<div>
+				<input id="rom" value="cm_otter-userdebug 4.2.2 JDQ39 eng..20130409.040037 test-keys"><br>
+				<div class="label">ROM</div>
+			</div>
+			<div>
+				<input id="version" value="4.2.2"><br>
+				<div class="label">OS Version</div>
+			</div>
+		</div>
+		<button onclick="post('create','devices')">Create</button>
+		<button onclick="post('request','devices')">Request</button>
+		<button onclick="post('update','devices')">Update</button>
+		<button onclick="post('delete','devices')">Delete</button>
+
+		<div id="result" class="feedback"></div>
+	</fieldset>
+	<fieldset id="user_profiles">
+		<legend>User Profiles</legend>
+		<div class="section">
+			<div>
+				<input id="user" value="james"><br>
+				<div class="label">Username</div>
+			</div>
+			<div>
+				<input id="package" value="63c9ee238b83c11a254b975eff5e84df"><br>
+				<div class="label">Package</div>
+			</div>
+			<div>
+				<input id="permission" value="android.permission.INTERNET"><br>
+				<div class="label">Permission</div>
+			</div>
+			<div>
+				<input id="active" value=0><br>
+				<div class="label">Active</div>
+			</div>
+		</div>
+		<button onclick="post('create','user_profiles')">Create</button>
+		<button onclick="post('request','user_profiles')">Request</button>
+		<button onclick="post('update','user_profiles')">Update</button>
+		<button onclick="post('delete','user_profiles')">Delete</button>
+
+		<div id="result" class="feedback"></div>
+	</fieldset>
+	<fieldset id="device_profiles">
+		<legend>Device Profiles</legend>
+		<div class="section">
+			<div>
+				<input id="uuid" value="dbdf731a0383eb4d"><br>
+				<div class="label">Username</div>
+			</div>
+			<div>
+				<input id="package" value="63c9ee238b83c11a254b975eff5e84df"><br>
+				<div class="label">Package</div>
+			</div>
+			<div>
+				<input id="permission" value="android.permission.INTERNET"><br>
+				<div class="label">Permission</div>
+			</div>
+			<div>
+				<input id="active" value=1><br>
+				<div class="label">Active</div>
+			</div>
+		</div>
+		<button onclick="post('create','device_profiles')">Create</button>
+		<button onclick="post('request','device_profiles')">Request</button>
+		<button onclick="post('update','device_profiles')">Update</button>
+		<button onclick="post('delete','device_profiles')">Delete</button>
+
+		<div id="result" class="feedback"></div>
+	</fieldset>
+</body>
+</html>

@@ -23,4 +23,22 @@ public class ResultCommand extends Command {
 		return result;
 	}
 
+	@Override
+	public void commandCompleted(int arg0, int arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void commandOutput(int arg0, String arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void commandTerminated(int arg0, String arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

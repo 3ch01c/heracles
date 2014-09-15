@@ -16,8 +16,9 @@
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/version_label"
-        android:layout_alignLeft="@+id/checksum"
+        android:layout_alignBaseline="@+id/name_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/name_label"
         android:textIsSelectable="true" />
 
     <TextView
@@ -33,8 +34,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/version_label"
-        android:layout_alignBottom="@+id/version_label"
-        android:layout_alignLeft="@+id/name"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/version_label"
         android:textIsSelectable="true" />
 
     <TextView
@@ -49,16 +50,26 @@
         android:id="@+id/created"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/location"
-        android:layout_alignLeft="@+id/version"
+        android:layout_alignBaseline="@+id/created_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/created_label"
         android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/location_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/created_label"
+        android:text="Location:" />
 
     <TextView
         android:id="@+id/location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/created"
-        android:layout_below="@+id/created_label"
+        android:layout_alignBaseline="@+id/location_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/location_label"
         android:textIsSelectable="true" />
 
     <TextView
@@ -66,15 +77,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/location"
+        android:layout_below="@+id/location_label"
         android:text="SDK:" />
 
     <TextView
         android:id="@+id/sdk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/location"
-        android:layout_below="@+id/location"
+        android:layout_alignBaseline="@+id/sdk_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/sdk_label"
         android:textIsSelectable="true" />
 
     <TextView
@@ -98,25 +110,7 @@
         android:id="@+id/size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/checksum_label"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/checksum"
-        android:textIsSelectable="true" />
-
-    <TextView
-        android:id="@+id/checksum"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/checksum_label"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/checksum_label"
-        android:textIsSelectable="true" />
-
-    <TextView
-        android:id="@+id/size"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/checksum_label"
+        android:layout_alignBaseline="@+id/checksum"
         android:layout_marginLeft="10dp"
         android:layout_toRightOf="@+id/checksum"
         android:textIsSelectable="true" />
@@ -125,8 +119,9 @@
         android:id="@+id/click_perm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_below="@+id/checksum_label"
-        android:text="The following permissions are requested by this package. Click a permission to view details."
+        android:text="@string/permission_list_help"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <LinearLayout
