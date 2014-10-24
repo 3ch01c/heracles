@@ -1,4 +1,4 @@
-package com.wernicke.android.heracles;
+package com.wernicke.android.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipOutputStream;
 
-import com.wernicke.android.utils.Base64;
+import com.wernicke.android.heracles.PackageListActivity;
+import com.wernicke.android.heracles.StringUtils;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -35,6 +37,7 @@ import com.stericson.RootTools.exceptions.RootDeniedException;
 import com.stericson.RootTools.execution.Command;
 import com.wernicke.android.utils.RootTools.ResultCommand;
 import com.wernicke.utils.JSONParser;
+import com.wernicke.utils.Validator;
 
 /**
  * A bunch of useful methods.
@@ -43,100 +46,50 @@ import com.wernicke.utils.JSONParser;
  * 
  */
 
-public class Utils {
+public class AndroidUtils {
+	public static final boolean DEBUG = false;
 	public static final String TAG_SUCCESS = "success", TAG_MESSAGE = "message", TAG_QUERY = "query";
 	public static final String METHOD = "POST";
-	// public static final String URL = "http://192.168.0.43/~james/heracles";
-	public static final String URL = "http://129.138.132.29/~james/heracles";
-	//public static final String URL = "https://nmtsfs.org/jwernicke/heracles";
+	public static final String URL = "http://wernicke.strangled.net:5984";
 	public static final int TIMEOUT = 100000;
 	static PackageManager pm;
 
 	public static final String[] permissionFlags = { "", "costsMoney" };
 
 	/**
-	 * Check if a string is numeric.
+	 * Generates MD5 hash of file at path and returns the first 8 characters of the Base-64 encoded hash.
 	 * 
-	 * @param s
+	 * @param path
 	 * @return
+	 * @throws DecoderException 
 	 */
-	public static boolean isNumeric(String s) {
-		try {
-			// try to parse string as numeric
-			Double.parseDouble(s);
-			return true;
-		} catch (NumberFormatException e) {
-			return false;
-		}
-	}
-
-	/**
-	 * Check if a string represents a hex value
-	 * 
-	 * @param in
-	 * @return
-	 */
-	public static boolean isHex(String in) {
-		final String HEX_CHARS = "0123456789abcdefABCDEF";
-		for (char c : in.toCharArray())
-			if (HEX_CHARS.indexOf(c) < 0)
-				return false;
-		return true;
-	}
-
-	/**
-	 * Convert byte array to hex string.
-	 * 
-	 * @param bytes
-	 * @return
-	 */
-	public static String toHex(byte[] bytes) {
-		BigInteger bi = new BigInteger(1, bytes);
-		return String.format("%0" + (bytes.length << 1) + "x", bi);
-	}
-
-	/**
-	 * Checks is a string is a MD5 hash.
-	 * 
-	 * @param s
-	 * @return
-	 */
-	public static boolean isHash(String s) {
-		if (isHex(s) && s.length() == 32)
-			return true;
-		return false;
-	}
-
-	/**
-	 * Gets checksum of package.
-	 * 
-	 * @param pkg
-	 * @return
-	 */
-	public static String getChecksum(String path) {
+	public static String getChecksum(String path) throws DecoderException {
 		// if the device has su & busybox, get package checksum, else do
-		// pseudo-checksum
-		try {
-			RootTools.debugMode = true; // turn on root tools debug mode
+		RootTools.debugMode = DEBUG; // turn on root tools debug mode
 
-			// build command
-			ResultCommand command = new ResultCommand(0, TIMEOUT, "md5sum " + path);
-			String checksum = command.getResult().split(" ")[0];
-			if (isHash(checksum)) {
-				return Base64.encode(Hex.decodeHex(checksum.toCharArray())).substring(0,8);
-			}
-		} catch (Exception e) {
+		// build command
+		ResultCommand command = new ResultCommand(0, TIMEOUT, "md5sum " + path);
+		// execute command
+		String checksum = command.getResult().split(" ")[0];
+		if (Validator.isMD5(checksum)) {
+			return Base64.encode(Hex.decodeHex(checksum.toCharArray())).substring(0,8);
 		}
 		return null;
 	}
 
+	/**
+	 * Generates MD5 hash of package name and version code and returns the first 8 characters of the Base-64 encoded hash.
+	 * Used when a file for the package can't be found.
+	 * @param path
+	 * @return
+	 * @throws DecoderException 
+	 */
 	public static String getChecksum(PackageInfo pkg) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			byte[] digest;
 			digest = md.digest((pkg.packageName + pkg.versionCode).getBytes("UTF-8"));
 			return Base64.encode(digest).substring(0,8);
-			//return toHex(digest);
 		} catch (NoSuchAlgorithmException e) {
 			Log.d("digest", "could not find MD5 algorithm");
 		} catch (UnsupportedEncodingException e) {
@@ -150,13 +103,16 @@ public class Utils {
 	 * 
 	 * @param pkg
 	 * @return
+	 * @throws RootDeniedException 
+	 * @throws TimeoutException 
+	 * @throws IOException 
 	 */
-	public static int getSize(String path) throws Exception {
+	public static int getSize(String path) throws IOException, TimeoutException, RootDeniedException {
 		int size = 0;
 
-		// if the device has su & busybox, get size, else just return 0
+		// check the device has su and busybox
 		if (RootTools.isAccessGiven() && RootTools.isBusyboxAvailable()) {
-			RootTools.debugMode = true; // turn on root tools debug mode
+			RootTools.debugMode = DEBUG; // turn on root tools debug mode
 
 			// build command
 			ResultCommand cmd = new ResultCommand(0, 10000, "stat -t " + path);
@@ -177,7 +133,8 @@ public class Utils {
 	}
 
 	/**
-	 * Get device manufacturer/model. Basically concatenates {@link Build.MANUFACTURER} and {@link Build.MODEL}, but some model names include manufacturer
+	 * Get device manufacturer/model. Basically concatenates {@link Build.MANUFACTURER} and
+	 * {@link Build.MODEL}, but some model names include manufacturer
 	 * already so this checks for that and eliminates the duplicate manufacturer name.
 	 */
 	public static String toDeviceName(String make, String model) {
@@ -286,97 +243,6 @@ public class Utils {
 		return result;
 	}
 
-	/**
-	 * Submits package info to database.
-	 * 
-	 * @param URL
-	 * @param pkg
-	 * @param pm
-	 * @return response message
-	 */
-	public static String submitPackage(PackageInfo pkg, String uuid) {
-		String result = null;
-		pm = PackageListActivity.pm;
-
-		try {
-			List<NameValuePair> params = buildPackageParams(pkg);
-			String checksum = params.get(0).getValue();
-
-			// create package
-			JSONParser jsonParser = new JSONParser();
-			JSONObject json = jsonParser.makeHttpRequest(URL + "/packages/create.php", METHOD, params);
-			Log.d(TAG_QUERY, json.getString(TAG_MESSAGE));
-			if (json.getInt(TAG_SUCCESS) == 1)
-				result = "Package created.";
-
-			for (String name : pkg.requestedPermissions) {
-				// create permission
-				PermissionInfo pi = pm.getPermissionInfo(name, PackageManager.GET_META_DATA);
-				params = buildPermissionParams(pi);
-				jsonParser = new JSONParser();
-				json = jsonParser.makeHttpRequest(URL + "/permissions/create.php", METHOD, params);
-				Log.d(TAG_QUERY, json.getString(TAG_MESSAGE));
-
-				// add permission request for package
-				params = new ArrayList<NameValuePair>();
-				params.add(new BasicNameValuePair("package", checksum));
-				params.add(new BasicNameValuePair("permission", name));
-				jsonParser = new JSONParser();
-				json = jsonParser.makeHttpRequest(URL + "/requests/create.php", METHOD, params);
-				Log.d(TAG_QUERY, json.getString(TAG_MESSAGE));
-
-				// add request to device profile
-				params = new ArrayList<NameValuePair>();
-				params.add(new BasicNameValuePair("uuid", uuid));
-				params.add(new BasicNameValuePair("package", checksum));
-				params.add(new BasicNameValuePair("permission", pi.name));
-				// TODO: make active based on whether user grants the permission
-				params.add(new BasicNameValuePair("active", "1"));
-				jsonParser = new JSONParser();
-				json = jsonParser.makeHttpRequest(URL + "/device_profiles/create.php", METHOD, params);
-				Log.d(TAG_QUERY, json.getString(TAG_MESSAGE));
-
-				// TODO: add request to user profile
-			}
-			result = json.getString(TAG_MESSAGE);
-		} catch (Exception e) {
-			// some other error occurred (probably could not connect server)
-			result = "Could not connect to server.";
-		}
-
-		// return response
-		return result;
-	}
-
-	// TODO allow updating profiles
-
-	// TODO report by submitting a single file
-	public File buildReportFile(String uuid, ArrayList<PackageInfo> packages) {
-		try {
-			String filename = String.format("%s-%s.zip", uuid, new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()).toString());
-			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(filename));
-
-			String make = Build.MANUFACTURER;
-			String model = Build.DISPLAY;
-			String carrier = Build.BRAND;
-			String rom = Build.DISPLAY;
-			String version = Build.VERSION.RELEASE;
-			
-			List<NameValuePair> params = buildDeviceParams(uuid, make, model, carrier, rom, version, null);
-			for (PackageInfo pkg : packages) {
-
-			}
-			out.close();
-		} catch (FileNotFoundException e) {
-			Log.e("buildReportFile", "file not found");
-		} catch (IOException e) {
-			Log.e("buildReportFile", "io exception");
-		}
-
-		return null;
-
-	}
-	
 	public JSONObject buildJSON(String uuid) {
 		JSONObject device = new JSONObject();
 		try {
@@ -467,15 +333,5 @@ public class Utils {
 		return null;
 		
 	}
-
-	public JSONObject getMarketData(String checksum) {
-		JSONObject json;
-		JSONParser jsonParser = new JSONParser();
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("package",checksum));
-		json = jsonParser.makeHttpRequest(URL + "/markets/stats.php", METHOD, params);
-		
-		return json;
-	}	
 }
 

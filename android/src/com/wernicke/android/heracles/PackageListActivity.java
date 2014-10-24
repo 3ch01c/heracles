@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.wernicke.android.utils.Utils;
 import com.wernicke.heracles.R;
 import com.wernicke.utils.JSONParser;
 

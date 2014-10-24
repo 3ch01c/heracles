@@ -11,5 +11,7 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="lib" path="libs/commons-io-2.4/commons-io-2.4-javadoc.jar"/>
 	<classpathentry kind="lib" path="libs/commons-io-2.4/commons-io-2.4-sources.jar"/>
+	<classpathentry kind="lib" path="E:/libs/commons-validator-1.4.0/commons-validator-1.4.0.jar"/>
+	<classpathentry kind="lib" path="E:/libs/commons-validator-1.4.0/commons-validator-1.4.0-javadoc.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

@@ -6,6 +6,10 @@ div {
 	float: left;
 }
 
+table {
+	font-size: 1em;
+}
+
 .section {
 	width: 100%;
 }
@@ -17,7 +21,7 @@ div {
 	text-align: center;
 }
 
-.feedback {
+.result {
 	float: none;
 }
 

@@ -18,6 +18,8 @@ import com.stericson.RootTools.RootTools;
 import com.stericson.RootTools.exceptions.RootDeniedException;
 import com.stericson.RootTools.execution.Command;
 import com.wernicke.android.heracles.PackageListActivity.SubmitFullReport;
+import com.wernicke.android.utils.AndroidUtils;
+import com.wernicke.android.utils.Utils;
 import com.wernicke.android.utils.RootTools.ResultCommand;
 import com.wernicke.heracles.BuildConfig;
 import com.wernicke.heracles.R;
@@ -56,7 +58,6 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
 
-@SuppressWarnings("unused")
 public class PackageViewActivity extends Activity {
 
 	private static final int TIMEOUT = 100000;
@@ -67,6 +68,7 @@ public class PackageViewActivity extends Activity {
 	PermissionListAdapter adapter; // permission list view adapter
 	PackageInfo pkg; // the package we're viewing
 
+	Package app;
 	String name; // fully qualified name of package
 	String label; // user displayed name of package
 	String versionName; // package version code/label
@@ -223,15 +225,17 @@ public class PackageViewActivity extends Activity {
 
 		@Override
 		protected String doInBackground(String... params) {
+			app = new Package(pkg);
+			app.label = pkg.applicationInfo.loadLabel(pm).toString();
 			if (location != null) {
 				// get package checksum
-				checksum = Utils.getChecksum(pkg.applicationInfo.sourceDir);
+				app.checksum = AndroidUtils.getChecksum(app.apkPath);
 				if (checksum == null)
-					checksum = Utils.getChecksum(pkg);
+					checksum = AndroidUtils.getChecksum(pkg);
 
 				// get package size
 				try {
-					size = Utils.getSize(pkg.applicationInfo.sourceDir);
+					app.size = AndroidUtils.getSize(app.apkPath);
 				} catch (Exception e) {
 					e.getMessage();
 				}
@@ -337,7 +341,11 @@ public class PackageViewActivity extends Activity {
 			// submit device
 			Utils.submitDevice(uuid, make, model, carrier, rom, version, null);
 			// submit package
-			result = Utils.submitPackage(pkg, uuid);
+			//result = Utils.submitPackage(pkg, uuid);
+			JSONObject data = new JSONObject();
+			data.put("name", name);
+			data.put("label", label);
+			data.put()
 			return result;
 		}
 
@@ -388,8 +396,11 @@ public class PackageViewActivity extends Activity {
 		}
 	}
 	
+	/** Presents a dialog to select an app to share the APK file with. */
 	class ShareApk extends AsyncTask<String, String, String> {
-
+		ProgressDialog pDialog;
+		AlertDialog aDialog;
+		
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
@@ -403,14 +414,13 @@ public class PackageViewActivity extends Activity {
 
 		@Override
 		protected String doInBackground(String... params) {
-			// TODO Auto-generated method stub
 			if (isExternalStorageWritable()) {
 				File dir = new File(Environment.getExternalStorageDirectory(), "backup/apk");
 				dir.mkdirs();
 				File file = new File(dir, FilenameUtils.getBaseName(location) + "-" + checksum + "." + FilenameUtils.getExtension(location));
 				String source = location,
 						destination = file.getAbsolutePath();
-				Log.d("copy file", "Copying file from " + location + " to " + file.getAbsolutePath());
+				//Log.d("copy file", "Copying file from " + location + " to " + file.getAbsolutePath());
 				if (RootTools.copyFile(source, destination, true, true)) {
 					pDialog.dismiss();
 					Intent intent = new Intent(Intent.ACTION_SEND);
@@ -422,9 +432,11 @@ public class PackageViewActivity extends Activity {
 					startActivity(Intent.createChooser(intent, "Send APK via..."));
 				}
 			} else {
-				pDialog.setMessage("Unable to access external storage.");
-				pDialog.setProgress(0);
-				pDialog.setIndeterminate(false);
+				// TODO figure out how to send APK file from protected storage
+				pDialog.hide();
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setMessage("Unable to copy APK file because external storage is unavailable.");
+				aDialog = builder.create();
 			}
 			return null;
 		}
